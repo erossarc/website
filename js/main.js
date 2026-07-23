@@ -241,8 +241,9 @@
       shown.forEach((c, i) => {
         const x = i * slot + slot / 2;
         const bullish = c.close >= c.open;
-        ctx.strokeStyle = ink;
-        ctx.globalAlpha = 0.85;
+
+        ctx.strokeStyle = bullish ? orange : ink;
+        ctx.globalAlpha = 1;
         ctx.lineWidth = 1.2 * dpr;
         ctx.beginPath();
         ctx.moveTo(x, yFor(c.high));
@@ -251,11 +252,19 @@
 
         const yOpen = yFor(c.open), yClose = yFor(c.close);
         const top = Math.min(yOpen, yClose);
-        const bh = Math.max(Math.abs(yClose - yOpen), 1.5 * dpr);
-        ctx.globalAlpha = bullish ? 0.9 : 0.35;
-        ctx.fillStyle = bullish ? orange : ink;
-        ctx.fillRect(x - bodyW / 2, top, bodyW, bh);
-        ctx.globalAlpha = 1;
+        const bh = Math.max(Math.abs(yClose - yOpen), 2 * dpr);
+
+        if (bullish) {
+          // bullish: solid filled orange body
+          ctx.fillStyle = orange;
+          ctx.fillRect(x - bodyW / 2, top, bodyW, bh);
+        } else {
+          // bearish: hollow body, outlined only, so it reads as the
+          // opposite of bullish without needing a second accent color
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 1.4 * dpr;
+          ctx.strokeRect(x - bodyW / 2, top, bodyW, bh);
+        }
       });
     }
 
