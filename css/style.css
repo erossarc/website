@@ -54,6 +54,7 @@ button{ font-family:inherit; cursor:pointer; background:none; border:none; }
   color:var(--ink);
 }
 .dot-type--xl{ font-size:clamp(38px, 8vw, 84px); }
+.dot-type--lg{ font-size:clamp(20px, 4vw, 40px); letter-spacing:.04em; }
 
 /* ==========================================================================
    Section rule (the "// SECTION: X ---- 004" marker)
@@ -118,7 +119,10 @@ button{ font-family:inherit; cursor:pointer; background:none; border:none; }
 .flow-node{ font-family:var(--font-mono); font-size:11.5px; border:1px solid var(--line-soft); border-radius:999px; padding:6px 14px; background:var(--bg-panel); color:var(--ink-dim); }
 .flow-lines{ position:absolute; inset:0; width:100%; height:100%; z-index:1; }
 .flow-lines line{ stroke:var(--line-soft); stroke-width:1; }
-.flow-dot{ fill:var(--orange); }
+.flow-dot{ fill:var(--orange); filter:drop-shadow(0 0 4px var(--orange)); }
+@media (prefers-reduced-motion: reduce){
+  .flow-dot animateMotion{ display:none; }
+}
 .flow-center{
   position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:3;
   width:40px; height:40px; border:1px solid var(--line); border-radius:6px; background:var(--bg-panel);
