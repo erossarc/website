@@ -120,12 +120,6 @@
     setInterval(tick, 1000);
   }
 
-  function renderLiveReaders() {
-    const el = document.getElementById("liveReaders");
-    if (!el) return;
-    el.textContent = (12 + Math.floor(Math.random() * 40)).toString();
-  }
-
   /* ---------------------------------------------------------------------
      Education content grids
   --------------------------------------------------------------------- */
@@ -194,9 +188,9 @@
     let visible = 1;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    function seed(n) {
+    function seed(n, startPrice) {
       const out = [];
-      let last = (support + resistance) / 2;
+      let last = startPrice != null ? startPrice : (support + resistance) / 2;
       for (let i = 0; i < n; i++) {
         const open = last;
         let close = open + (Math.random() - 0.5) * 22;
@@ -277,7 +271,8 @@
     }, 55);
 
     setInterval(() => {
-      const next = seed(1)[0];
+      const prevClose = candles[candles.length - 1].close;
+      const next = seed(1, prevClose)[0];
       candles.push(next);
       candles.shift();
       visible = candles.length;
@@ -360,14 +355,12 @@
     renderSessions();
     renderTick();
     renderMetrics();
-    renderLiveReaders();
     initStructureChart();
     initSparkChart();
 
     setInterval(renderTick, 1000);
     setInterval(renderSessions, 30000);
     setInterval(renderMetrics, 4000);
-    setInterval(renderLiveReaders, 6000);
   }
 
   if (document.readyState === "loading") {
