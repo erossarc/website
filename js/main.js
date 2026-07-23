@@ -209,15 +209,13 @@
       canvas.height = rect.height * dpr;
     }
 
-    function draw() {
+    function drawFrame(list, shiftSlots) {
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
-      const shown = candles.slice(0, visible);
-      if (!shown.length) return;
+      if (!list.length) return;
 
       const orange = cssVar("--orange") || "#FF5A1F";
       const ink = cssVar("--ink") || "#16150F";
-      const lineSoft = cssVar("--line-soft") || "rgba(0,0,0,.14)";
 
       const yFor = v => h - ((v - (support - 20)) / ((resistance + 20) - (support - 20))) * h;
 
@@ -235,11 +233,14 @@
       ctx.setLineDash([]);
       ctx.globalAlpha = 1;
 
-      const slot = w / candles.length;
-      const bodyW = Math.max(slot * 0.5, 2 * dpr);
+      // fixed slot width based on the steady-state candle count (38),
+      // so spacing never changes even while extra candles slide through
+      const slot = w / 38;
+      const bodyW = Math.max(slot * 0.42, 2 * dpr);
 
-      shown.forEach((c, i) => {
-        const x = i * slot + slot / 2;
+      list.forEach((c, i) => {
+        const x = (i - shiftSlots) * slot + slot / 2;
+        if (x < -slot || x > w + slot) return; // off-canvas, skip
         const bullish = c.close >= c.open;
 
         ctx.strokeStyle = bullish ? orange : ink;
@@ -255,18 +256,17 @@
         const bh = Math.max(Math.abs(yClose - yOpen), 2 * dpr);
 
         if (bullish) {
-          // bullish: solid filled orange body
           ctx.fillStyle = orange;
           ctx.fillRect(x - bodyW / 2, top, bodyW, bh);
         } else {
-          // bearish: hollow body, outlined only, so it reads as the
-          // opposite of bullish without needing a second accent color
           ctx.strokeStyle = ink;
           ctx.lineWidth = 1.4 * dpr;
           ctx.strokeRect(x - bodyW / 2, top, bodyW, bh);
         }
       });
     }
+
+    function draw() { drawFrame(candles.slice(0, visible), 0); }
 
     resize();
     candles = seed(38);
@@ -279,14 +279,32 @@
       if (visible >= candles.length) clearInterval(grow);
     }, 55);
 
-    setInterval(() => {
+    let sliding = false;
+    function tick() {
+      if (sliding) return;
+      sliding = true;
       const prevClose = candles[candles.length - 1].close;
       const next = seed(1, prevClose)[0];
-      candles.push(next);
-      candles.shift();
-      visible = candles.length;
-      draw();
-    }, 1800);
+      candles.push(next); // now 39 long -- extra one slides in from the right
+
+      const dur = 480;
+      const start = performance.now();
+      function step(now) {
+        const p = Math.min((now - start) / dur, 1);
+        const eased = 1 - Math.pow(1 - p, 3);
+        drawFrame(candles, eased);
+        if (p < 1) {
+          requestAnimationFrame(step);
+        } else {
+          candles.shift(); // drop the oldest now that it has slid off
+          visible = candles.length;
+          sliding = false;
+          draw();
+        }
+      }
+      requestAnimationFrame(step);
+    }
+    setInterval(tick, 2200);
 
     window.addEventListener("resize", () => { resize(); draw(); }, { passive: true });
     window.addEventListener("erossarc-theme-change", draw);
