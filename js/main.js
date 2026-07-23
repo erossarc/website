@@ -21,6 +21,7 @@
       const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
       root.setAttribute("data-theme", next);
       localStorage.setItem("erossarc-theme", next);
+      window.dispatchEvent(new Event("erossarc-theme-change"));
     });
   }
 
@@ -178,6 +179,174 @@
   }
 
   /* ---------------------------------------------------------------------
+     Structure chart (replaces the old static isometric render)
+  --------------------------------------------------------------------- */
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function initStructureChart() {
+    const canvas = document.getElementById("structureCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const support = 4214.0, resistance = 4388.5;
+    let candles = [];
+    let visible = 1;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function seed(n) {
+      const out = [];
+      let last = (support + resistance) / 2;
+      for (let i = 0; i < n; i++) {
+        const open = last;
+        let close = open + (Math.random() - 0.5) * 22;
+        close = Math.min(Math.max(close, support + 6), resistance - 6);
+        const high = Math.max(open, close) + Math.random() * 8;
+        const low = Math.min(open, close) - Math.random() * 8;
+        out.push({ open, close, high, low });
+        last = close;
+      }
+      return out;
+    }
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+    }
+
+    function draw() {
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      const shown = candles.slice(0, visible);
+      if (!shown.length) return;
+
+      const orange = cssVar("--orange") || "#FF5A1F";
+      const ink = cssVar("--ink") || "#16150F";
+      const lineSoft = cssVar("--line-soft") || "rgba(0,0,0,.14)";
+
+      const yFor = v => h - ((v - (support - 20)) / ((resistance + 20) - (support - 20))) * h;
+
+      // support / resistance dashed lines
+      [support, resistance].forEach(level => {
+        ctx.strokeStyle = orange;
+        ctx.globalAlpha = 0.55;
+        ctx.setLineDash([4 * dpr, 5 * dpr]);
+        ctx.lineWidth = 1 * dpr;
+        ctx.beginPath();
+        ctx.moveTo(0, yFor(level));
+        ctx.lineTo(w, yFor(level));
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      const slot = w / candles.length;
+      const bodyW = Math.max(slot * 0.5, 2 * dpr);
+
+      shown.forEach((c, i) => {
+        const x = i * slot + slot / 2;
+        const bullish = c.close >= c.open;
+        ctx.strokeStyle = ink;
+        ctx.globalAlpha = 0.85;
+        ctx.lineWidth = 1.2 * dpr;
+        ctx.beginPath();
+        ctx.moveTo(x, yFor(c.high));
+        ctx.lineTo(x, yFor(c.low));
+        ctx.stroke();
+
+        const yOpen = yFor(c.open), yClose = yFor(c.close);
+        const top = Math.min(yOpen, yClose);
+        const bh = Math.max(Math.abs(yClose - yOpen), 1.5 * dpr);
+        ctx.globalAlpha = bullish ? 0.9 : 0.35;
+        ctx.fillStyle = bullish ? orange : ink;
+        ctx.fillRect(x - bodyW / 2, top, bodyW, bh);
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    resize();
+    candles = seed(38);
+    visible = 1;
+    draw();
+
+    const grow = setInterval(() => {
+      visible++;
+      draw();
+      if (visible >= candles.length) clearInterval(grow);
+    }, 55);
+
+    setInterval(() => {
+      const next = seed(1)[0];
+      candles.push(next);
+      candles.shift();
+      visible = candles.length;
+      draw();
+    }, 1800);
+
+    window.addEventListener("resize", () => { resize(); draw(); }, { passive: true });
+    window.addEventListener("erossarc-theme-change", draw);
+  }
+
+  /* ---------------------------------------------------------------------
+     Manifest panel sparkline ("SESSION_FLOW")
+  --------------------------------------------------------------------- */
+  function initSparkChart() {
+    const canvas = document.getElementById("sparkCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const POINTS = 24;
+    let values = Array.from({ length: POINTS }, () => 0.3 + Math.random() * 0.7);
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+    }
+
+    function draw() {
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      const orange = cssVar("--orange") || "#FF5A1F";
+      const step = w / (POINTS - 1);
+
+      ctx.beginPath();
+      values.forEach((v, i) => {
+        const x = i * step;
+        const y = h - v * h;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = orange;
+      ctx.lineWidth = 1.6 * dpr;
+      ctx.stroke();
+
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.globalAlpha = 0.12;
+      ctx.fillStyle = orange;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    resize();
+    draw();
+    window.addEventListener("erossarc-theme-change", draw);
+
+    setInterval(() => {
+      values.shift();
+      const last = values[values.length - 1];
+      let next = last + (Math.random() - 0.5) * 0.3;
+      next = Math.min(Math.max(next, 0.08), 0.95);
+      values.push(next);
+      draw();
+    }, 900);
+
+    window.addEventListener("resize", () => { resize(); draw(); }, { passive: true });
+  }
+
+  /* ---------------------------------------------------------------------
      INIT
   --------------------------------------------------------------------- */
   function init() {
@@ -192,6 +361,8 @@
     renderTick();
     renderMetrics();
     renderLiveReaders();
+    initStructureChart();
+    initSparkChart();
 
     setInterval(renderTick, 1000);
     setInterval(renderSessions, 30000);
