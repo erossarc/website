@@ -170,6 +170,10 @@ button{ font-family:inherit; cursor:pointer; background:none; border:none; }
   padding:8px 10px; border-radius:2px; z-index:2;
 }
 [data-theme="dark"] .iso-card{ background:rgba(255,255,255,.08); border-color:rgba(0,0,0,.2); color:var(--dark-ink); }
+.iso-legend{ display:flex; gap:18px; padding:0 20px 14px; font-family:var(--font-mono); font-size:10.5px; opacity:.7; }
+.leg-swatch{ display:inline-block; width:10px; height:10px; margin-right:6px; vertical-align:middle; }
+.leg-swatch--fill{ background:var(--orange); }
+.leg-swatch--hollow{ border:1.4px solid currentColor; background:transparent; }
 .iso-card--1{ top:26%; left:8%; }
 .iso-card--2{ top:12%; right:6%; }
 .iso-foot{ display:flex; justify-content:space-between; padding:14px 20px; font-family:var(--font-mono); font-size:10px; opacity:.55; border-top:1px solid rgba(255,255,255,.12); }
