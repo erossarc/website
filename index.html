@@ -89,13 +89,13 @@
         <line x1="400" y1="100" x2="680" y2="165" />
 
         <circle class="flow-dot" r="3.5">
-          <animateMotion dur="2.6s" begin="0s"   repeatCount="indefinite" path="M120,35 L400,100" />
+          <animateMotion dur="2.6s" begin="0s"   repeatCount="indefinite" path="M400,100 L120,35" />
         </circle>
         <circle class="flow-dot" r="3.5">
-          <animateMotion dur="2.6s" begin="0.35s" repeatCount="indefinite" path="M120,100 L400,100" />
+          <animateMotion dur="2.6s" begin="0.35s" repeatCount="indefinite" path="M400,100 L120,100" />
         </circle>
         <circle class="flow-dot" r="3.5">
-          <animateMotion dur="2.6s" begin="0.7s"  repeatCount="indefinite" path="M120,165 L400,100" />
+          <animateMotion dur="2.6s" begin="0.7s"  repeatCount="indefinite" path="M400,100 L120,165" />
         </circle>
         <circle class="flow-dot" r="3.5">
           <animateMotion dur="2.6s" begin="0.15s" repeatCount="indefinite" path="M400,100 L680,35" />
@@ -178,11 +178,7 @@
           <span class="iso-live">LIVE</span>
         </div>
         <div class="iso-stage" id="isoStage">
-          <div class="iso-tower iso-tower--a"><i class="face top"></i><i class="face left"></i><i class="face right"></i></div>
-          <div class="iso-tower iso-tower--b"><i class="face top"></i><i class="face left"></i><i class="face right"></i></div>
-          <div class="iso-tower iso-tower--c"><i class="face top"></i><i class="face left"></i><i class="face right"></i></div>
-          <div class="iso-tower iso-tower--d"><i class="face top"></i><i class="face left"></i><i class="face right"></i></div>
-          <div class="iso-tower iso-tower--e"><i class="face top"></i><i class="face left"></i><i class="face right"></i></div>
+          <canvas id="structureCanvas" class="structure-canvas"></canvas>
           <div class="iso-card iso-card--1">SUPPORT<br>4,214.0</div>
           <div class="iso-card iso-card--2">RESISTANCE<br>4,388.5</div>
         </div>
@@ -196,6 +192,10 @@
         <div class="manifest-head">
           <span>MANIFEST.MD</span>
           <span>V3.1.0</span>
+        </div>
+        <div class="manifest-spark">
+          <span class="manifest-spark-label"><span class="dash-blip"></span> SESSION_FLOW</span>
+          <canvas id="sparkCanvas" class="spark-canvas"></canvas>
         </div>
         <h3 class="manifest-title">CURRICULUM BUILT FOR<br><em>RAW MARKET LITERACY</em></h3>
         <p>We teach the substrate layer beneath every strategy — structure, liquidity, sessions and risk. No signals. No calls. No abstractions.</p>
